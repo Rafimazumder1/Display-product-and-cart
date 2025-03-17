@@ -12,10 +12,16 @@
         </tr>
     </thead>
     <tbody>
-        @php $total = 0 @endphp
+        @php
+            $total = 0;
+            $productCount = session('cart') ? count(session('cart')) : 0;
+        @endphp
         @if(session('cart'))
             @foreach(session('cart') as $id => $details)
-                @php $total += $details['price'] * $details['quantity'] @endphp
+                @php
+                    $subtotal = $details['price'] * $details['quantity'];
+                    $total += $subtotal;
+                @endphp
                 <tr data-id="{{ $id }}">
                     <td data-th="Product">
                         <div class="row">
@@ -25,11 +31,11 @@
                             </div>
                         </div>
                     </td>
-                    <td data-th="Price">${{ $details['price'] }}</td>
+                    <td data-th="Price">${{ number_format($details['price'], 2) }}</td>
                     <td data-th="Quantity">
                         <input type="number" value="{{ $details['quantity'] }}" class="form-control quantity update-cart" />
                     </td>
-                    <td data-th="Subtotal" class="text-center">${{ $details['price'] * $details['quantity'] }}</td>
+                    <td data-th="Subtotal" class="text-center subtotal">${{ number_format($subtotal, 2) }}</td>
                     <td class="actions" data-th="">
                         <button class="btn btn-danger btn-sm remove-from-cart"><i class="fa fa-trash-o"></i></button>
                     </td>
@@ -37,9 +43,28 @@
             @endforeach
         @endif
     </tbody>
+
+    @php
+        $discount = 0;
+        if ($productCount >= 3) {
+            $discount = $total * 0.10;
+        }
+        $finalTotal = $total - $discount;
+    @endphp
+
     <tfoot>
         <tr>
-            <td colspan="5" class="text-right"><h3><strong>Total ${{ $total }}</strong></h3></td>
+            <td colspan="5" class="text-right"><h4><strong>Subtotal: $<span class="cart-total">{{ number_format($total, 2) }}</span></strong></h4></td>
+        </tr>
+        @if ($discount > 0)
+        <tr class="discount-row">
+            <td colspan="5" class="text-right text-success">
+                <h4><strong>Discount (10% Applied): -$<span class="discount-amount">{{ number_format($discount, 2) }}</span></strong></h4>
+            </td>
+        </tr>
+        @endif
+        <tr>
+            <td colspan="5" class="text-right"><h3><strong>Final Total: $<span class="final-total">{{ number_format($finalTotal, 2) }}</span></strong></h3></td>
         </tr>
         <tr>
             <td colspan="5" class="text-right">
@@ -53,45 +78,59 @@
 
 @section('scripts')
 <script type="text/javascript">
+    $(document).ready(function () {
+        $(".update-cart").change(function (e) {
+            e.preventDefault();
+            var ele = $(this);
 
-    $(".update-cart").change(function (e) {
-        e.preventDefault();
+            $.ajax({
+                url: '{{ route('update.cart') }}',
+                method: "PATCH",
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: ele.parents("tr").attr("data-id"),
+                    quantity: ele.parents("tr").find(".quantity").val()
+                },
+                success: function (response) {
+                    if (response.success) {
 
-        var ele = $(this);
+                        ele.parents("tr").find(".subtotal").text('$' + response.total_price);
 
-        $.ajax({
-            url: '{{ route('update.cart') }}',
-            method: "patch",
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: ele.parents("tr").attr("data-id"),
-                quantity: ele.parents("tr").find(".quantity").val()
-            },
-            success: function (response) {
-               window.location.reload();
+
+                        $(".cart-total").text('$' + response.cart_total);
+
+                        
+                        if (response.discount > 0) {
+                            $(".discount-amount").text('$' + response.discount);
+                            $(".discount-row").show();
+                        } else {
+                            $(".discount-row").hide();
+                        }
+
+                        $(".final-total").text('' + response.final_total);
+                    }
+                }
+            });
+        });
+
+        $(".remove-from-cart").click(function (e) {
+            e.preventDefault();
+            var ele = $(this);
+
+            if (confirm("Are you sure want to remove?")) {
+                $.ajax({
+                    url: '{{ route('remove.from.cart') }}',
+                    method: "DELETE",
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        id: ele.parents("tr").attr("data-id")
+                    },
+                    success: function (response) {
+                        window.location.reload();
+                    }
+                });
             }
         });
     });
-
-    $(".remove-from-cart").click(function (e) {
-        e.preventDefault();
-
-        var ele = $(this);
-
-        if(confirm("Are you sure want to remove?")) {
-            $.ajax({
-                url: '{{ route('remove.from.cart') }}',
-                method: "DELETE",
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    id: ele.parents("tr").attr("data-id")
-                },
-                success: function (response) {
-                    window.location.reload();
-                }
-            });
-        }
-    });
-
 </script>
 @endsection

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Product;
+use DB;
 
 
 class ProductSeeder extends Seeder
@@ -18,7 +19,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Samsung Galaxy',
                 'description' => 'Samsung Brand',
-                'image' => 'https://dummyimage.com/200x300/000/fff&text=Samsung',
+                'image' => 'https://falaqfood.com/wp-content/uploads/2024/06/sundorboner-modhu-for-web-20244-scaled.jpg',
                 'price' => 100
             ],
             [
@@ -40,6 +41,10 @@ class ProductSeeder extends Seeder
                 'price' => 200
             ]
         ];
+
+        DB::table('products')->where('name', 'Google Pixel 2 XL')->update([
+            'image' => 'https://falaqfood.com/wp-content/uploads/2024/06/sundorboner-modhu-for-web-20244-scaled.jpg'
+        ]);
 
         foreach ($products as $key => $value) {
             Product::create($value);

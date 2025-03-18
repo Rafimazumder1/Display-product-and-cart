@@ -9,8 +9,9 @@ Route::get('ccn', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('welcome');
+    return redirect('/');
 })->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/', [ProductController::class, 'index']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -7,32 +7,19 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
     public function index()
     {
         $products = Product::all();
         return view('products', compact('products'));
     }
 
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
+
     public function cart()
     {
         return view('cart');
     }
 
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
+
     public function addToCart($id)
     {
         $product = Product::findOrFail($id);
@@ -53,37 +40,6 @@ class ProductController extends Controller
         session()->put('cart', $cart);
         return redirect()->back()->with('success', 'Product added to cart successfully!');
     }
-
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
-    // public function update(Request $request)
-    // {
-    //     if ($request->id && $request->quantity) {
-    //         $cart = session()->get('cart');
-
-    //         if (isset($cart[$request->id])) {
-    //             $cart[$request->id]["quantity"] = (int) $request->quantity;
-    //             $cart[$request->id]["total_price"] = $cart[$request->id]["price"] * $cart[$request->id]["quantity"];
-
-    //             session()->put('cart', $cart);
-
-    //             return response()->json([
-    //                 'success' => true,
-    //                 'total_price' => number_format($cart[$request->id]["total_price"], 2),
-    //                 'cart_total' => number_format(array_sum(array_map(function($item) {
-    //                     return $item['price'] * $item['quantity'];
-    //                 }, $cart)), 2),
-    //             ]);
-    //         }
-    //     }
-
-    //     return response()->json(['success' => false, 'message' => 'Item not found in cart']);
-    // }
-
-
 
 
     public function update(Request $request)
@@ -121,11 +77,7 @@ class ProductController extends Controller
 
 
 
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
+   
     public function remove(Request $request)
     {
         if($request->id) {
